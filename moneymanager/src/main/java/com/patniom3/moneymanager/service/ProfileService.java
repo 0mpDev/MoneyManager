@@ -4,7 +4,9 @@ import com.patniom3.moneymanager.dto.AuthDTO;
 import com.patniom3.moneymanager.dto.ProfileDTO;
 import com.patniom3.moneymanager.entity.ProfileEntity;
 import com.patniom3.moneymanager.repository.ProfileRepository;
+import com.patniom3.moneymanager.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 
@@ -22,6 +24,9 @@ public class ProfileService {
     private final ProfileRepository profileRepository;
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
+    private final JwtUtil jwtUtil;
+
 
     public ProfileDTO registeredProfile(ProfileDTO profileDTO) {
 
@@ -54,7 +59,7 @@ public class ProfileService {
                 .id(profileEntity.getId())
                 .fullName(profileEntity.getFullName())
                 .email(profileEntity.getEmail())
-                .password(profileEntity.getPassword())
+                .password(null)
                 .profileImageUrl(profileEntity.getProfileImageUrl())
                 .createdAt(profileEntity.getCreatedAt())
                 .updatedAt(profileEntity.getUpdatedAt())
@@ -104,12 +109,31 @@ public class ProfileService {
 
     }
 
-    public Map<String, Object> authenticateAndGenerateToken (AuthDTO authDTO){
-        try{
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authDTO.getEmail(), authDTO.getPassword()));
-            return Map.of("token", "JWT token",
-                    "user", getPublicProfile(authDTO.getEmail()));
-        } catch(Exception e){
+//    public Map<String, Object> authenticateAndGenerateToken (AuthDTO authDTO){
+//        try{
+//            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authDTO.getEmail(), authDTO.getPassword()));
+//            String token =  jwtUtil.generateToken(authDTO.getEmail());
+//            return Map.of("token", token,
+//                    "user", getPublicProfile(authDTO.getEmail()));
+//        } catch(Exception e){
+//            throw new RuntimeException("Invalid email or password");
+//        }
+//    }
+
+    public Map<String, Object> authenticateAndGenerateToken(AuthDTO authDTO) {
+        try {
+            // Check if account is active first
+            if (!isAccountActive(authDTO.getEmail())) {
+                throw new RuntimeException("Account is not activated. Please check your email for activation link.");
+            }
+
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(authDTO.getEmail(), authDTO.getPassword())
+            );
+
+            String token = jwtUtil.generateToken(authDTO.getEmail());
+            return Map.of("token", token, "user", getPublicProfile(authDTO.getEmail()));
+        } catch (Exception e) {
             throw new RuntimeException("Invalid email or password");
         }
     }
