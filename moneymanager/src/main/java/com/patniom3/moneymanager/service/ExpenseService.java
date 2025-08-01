@@ -7,6 +7,7 @@ import com.patniom3.moneymanager.entity.ProfileEntity;
 import com.patniom3.moneymanager.repository.CategoryRepository;
 import com.patniom3.moneymanager.repository.ExpenseRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -29,7 +30,7 @@ public class ExpenseService {
         return toDTO(newExpense);
     }
 
-    // Retrieves all expenses for current month/based on the start date and end date
+    // Retrieves all expenses for the current month/based on the start date and end date
     public List<ExpenseDTO> getCurrentMonthExpensesForCurrentUser(){
         ProfileEntity profile = profileService.getCurrentProfile();
         LocalDate now = LocalDate.now();
@@ -62,6 +63,13 @@ public class ExpenseService {
         ProfileEntity profile = profileService.getCurrentProfile();
         BigDecimal total = expenseRepository.findTotalExpenseByProfileId(profile.getId());
         return total != null ? total: BigDecimal.ZERO;
+    }
+
+    //filter expenses
+    public List<ExpenseDTO> filterExpenses(LocalDate startDate, LocalDate endDate,String keyword, Sort sort){
+        ProfileEntity profile = profileService.getCurrentProfile();
+        List<ExpenseEntity> list = expenseRepository.findByProfileIdAndDateBetweenAndNameContainingIgnoreCase(profile.getId(),startDate,endDate,keyword,sort);
+        return list.stream().map(this::toDTO).toList();
     }
 
     // helper methods
