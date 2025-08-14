@@ -26,6 +26,11 @@ public class IncomeService {
         CategoryEntity category = categoryRepository.findById(dto.getCategoryId())
                 .orElseThrow(() -> new RuntimeException("Category not found"));
         IncomeEntity newIncome = toEntity(dto,profile,category);
+
+        if (newIncome.getName() == null || newIncome.getName().isBlank()) {
+            newIncome.setName("N/A");
+        }
+
         newIncome = incomeRepository.save(newIncome);
         return toDTO(newIncome);
     }
@@ -66,7 +71,7 @@ public class IncomeService {
         return list.stream().map(this::toDTO).toList();
     }
 
-    //filter incomes
+//    filter incomes bhushan
     public List<IncomeDTO> filterIncomes(LocalDate startDate, LocalDate endDate, String keyword, Sort sort) {
         ProfileEntity profile = profileService.getCurrentProfile();
         List<IncomeEntity> list = incomeRepository.findByProfileIdAndDateBetweenAndNameContainingIgnoreCase(
@@ -74,6 +79,9 @@ public class IncomeService {
         );
         return list.stream().map(this::toDTO).toList();
     }
+
+
+
 
 
     private IncomeEntity toEntity(IncomeDTO dto, ProfileEntity profile, CategoryEntity category) {

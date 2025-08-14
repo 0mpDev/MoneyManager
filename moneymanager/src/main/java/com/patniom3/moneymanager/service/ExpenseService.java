@@ -26,6 +26,11 @@ public class ExpenseService {
         CategoryEntity category = categoryRepository.findById(dto.getCategoryId())
                 .orElseThrow(() -> new RuntimeException("Category not found"));
         ExpenseEntity newExpense = toEntity(dto,profile,category);
+
+        if (newExpense.getName() == null || newExpense.getName().isBlank()) {
+            newExpense.setName("N/A");
+        }
+
         newExpense = expenseRepository.save(newExpense);
         return toDTO(newExpense);
     }
@@ -65,12 +70,17 @@ public class ExpenseService {
         return total != null ? total: BigDecimal.ZERO;
     }
 
-    //filter expenses
+//    filter expenses bhushan
     public List<ExpenseDTO> filterExpenses(LocalDate startDate, LocalDate endDate,String keyword, Sort sort){
         ProfileEntity profile = profileService.getCurrentProfile();
         List<ExpenseEntity> list = expenseRepository.findByProfileIdAndDateBetweenAndNameContainingIgnoreCase(profile.getId(),startDate,endDate,keyword,sort);
         return list.stream().map(this::toDTO).toList();
     }
+
+
+
+
+
 
     //Notifications
     public List<ExpenseDTO> getExpensesForUserOnDate(Long profileId, LocalDate date){
