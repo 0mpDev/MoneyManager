@@ -7,6 +7,9 @@ import Input from "../components/Input";   // custom input component
 import { validateEmail } from "../util/validation"; // email validation function
 import axiosConfig from "../util/axiosConfig"; // axios instance
 import { API_ENDPOINTS } from "../util/apiEndpoints"; // API endpoints
+import ProfilePhotoSelector from "../components/ProfilePhotoSelector";
+import uploadProfileImage from "../util/uploadProfileImage";
+
 
 const Signup = () => {
     const [fullName, setFullName] = useState("");
@@ -14,10 +17,14 @@ const Signup = () => {
     const [password, setPassword] = useState("");
     const [error, setError] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
-    const navigate = useNavigate();
+    const [profilePhoto, setProfilePhoto] = useState(null);
 
+
+    const navigate = useNavigate();
+    
     const handleSubmit = async (e) => {
         e.preventDefault();
+        let profileImageUrl = "";
         setIsLoading(true);
 
         // Validation checks
@@ -40,10 +47,17 @@ const Signup = () => {
         setError("");
 
         try {
+
+            //upload image if present
+            if (profilePhoto) {
+                const imageUrl = await uploadProfileImage(profilePhoto);
+                profileImageUrl = imageUrl || "";
+            }
             const response = await axiosConfig.post(API_ENDPOINTS.REGISTER, {
                 fullName,
                 email,
                 password,
+                profileImageUrl
             });
 
             if (response.status === 201) {
@@ -77,6 +91,9 @@ const Signup = () => {
                     </p>
 
                     <form onSubmit={handleSubmit} className="space-y-4">
+                        <div className="flex justify-center mb-6">
+                            <ProfilePhotoSelector image={profilePhoto} setImage={setProfilePhoto} />
+                        </div>
                         <div className="grid grid-cols-2 gap-4">
                             <Input
                                 value={fullName}

@@ -9,40 +9,43 @@ const axiosConfig = axios.create({
     }
 });
 
-// list of endpoints that dont require authorization header
+// list of endpoints that don't require authorization header
 const excludeEndpoints = ['/login', '/register', '/status', '/activate', '/health'];
 
 // request interceptor
-axiosConfig.interceptors.request.use((config) => {
-    const shouldSkipToken = excludeEndpoints.some((endpoint) =>
-        config.url?.includes(endpoint)
-    );
+axiosConfig.interceptors.request.use(
+    (config) => {
+        const shouldSkipToken = excludeEndpoints.some((endpoint) => {
+            return config.url?.includes(endpoint);
+        });
 
-    if (!shouldSkipToken) {
-        const accessToken = localStorage.getItem("token");
-        if (accessToken) {
-            config.headers.Authorization = `Bearer ${accessToken}`;
+        if (!shouldSkipToken) {
+            const accessToken = localStorage.getItem("token");
+            if (accessToken) {
+                config.headers.Authorization = `Bearer ${accessToken}`;
+            }
         }
-    }
 
-    return config;
-}, (error) => {
-    return Promise.reject(error);
-});
+        return config;
+    },
+    (error) => Promise.reject(error)
+);
 
-axiosConfig.interceptors.response.use((response) => {
-    return response;
-}, (error) => {
-    if (error.response) {
-        if (error.response.status === 401) {
-            window.location.href = "/login";
-        } else if (error.response.status === 500) {
-            console.error("server error. Please try again later");
+// response interceptor
+axiosConfig.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response) {
+            if (error.response.status === 401) {
+                window.location.href = "/login";
+            } else if (error.response.status === 500) {
+                console.error("Server error. Please try again later");
+            }
+        } else if (error.code === "ECONNABORTED") {
+            console.error("Request timeout. Please try again.");
         }
-    } else if (error.code === "ECONNABORTED") { // fixed typo
-        console.error("Request timeout. Please try again.");
+        return Promise.reject(error);
     }
-    return Promise.reject(error);
-});
+);
 
 export default axiosConfig;

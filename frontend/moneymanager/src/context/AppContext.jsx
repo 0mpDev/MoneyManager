@@ -1,6 +1,6 @@
 import { createContext, useState } from "react";
 
-// ✅ Export AppContext so named import works
+
 export const AppContext = createContext();
 
 export const AppContextProvider = ({ children }) => {
