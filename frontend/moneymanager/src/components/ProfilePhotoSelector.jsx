@@ -15,6 +15,7 @@ const ProfilePhotoSelector = ({ image, setImage }) => {
     };
 
     const handleRemoveImage = (e) => {
+        e.preventDefault();
         setImage(null);
         if (previewURL) URL.revokeObjectURL(previewURL);
         setPreviewURL(null);

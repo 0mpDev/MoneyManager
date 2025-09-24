@@ -46,6 +46,7 @@ const Signup = () => {
 
         setError("");
 
+        // signup api call
         try {
 
             //upload image if present

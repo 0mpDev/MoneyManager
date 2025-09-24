@@ -18,6 +18,7 @@ const uploadProfileImage = async (file) => {
         const data = text ? JSON.parse(text) : {};
 
         if (!response.ok) {
+            const errorData = await response.json();
             throw new Error(`Failed to upload image: ${data?.error?.message || response.statusText}`);
         }
 

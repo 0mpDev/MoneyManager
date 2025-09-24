@@ -36,6 +36,7 @@ const Login = () => {
     }
 
     setError("");
+    // login api call
     try {
       const response = await axiosConfig.post(API_ENDPOINTS.LOGIN, {
         email,
